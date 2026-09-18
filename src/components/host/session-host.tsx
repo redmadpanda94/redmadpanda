@@ -10,6 +10,7 @@ import { HostFinalQuestion } from "./host-final-question";
 import { HostFinished } from "./host-finished";
 import { ConnectionBadge } from "./connection-badge";
 import { HostToolbar } from "./host-toolbar";
+import { HistoryPanel } from "./history-panel";
 
 export function SessionHost({
   sessionId,
@@ -58,6 +59,7 @@ export function SessionHost({
           <ConnectionBadge connection={connection} />
         </div>
         <div className="flex items-center gap-3">
+          <HistoryPanel sessionId={sessionId} teams={state.teams} />
           {state.status !== "lobby" && state.status !== "finished" && <HostToolbar sessionId={sessionId} />}
           {SoundToggle}
           <button onClick={toggleFullscreen} className="rounded px-2 py-1 hover:bg-white/10">

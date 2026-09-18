@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { handleApiError, requireHost } from "@/lib/api-helpers";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { requireSessionForHost, publishState } from "@/lib/game/session-service";
+import { requireSessionForHost, logEvent, publishState } from "@/lib/game/session-service";
 import { assertTransition } from "@/lib/game/state-machine";
 
 export async function POST(_request: Request, ctx: { params: Promise<{ sessionId: string }> }) {
@@ -15,6 +15,7 @@ export async function POST(_request: Request, ctx: { params: Promise<{ sessionId
     const { error } = await admin.from("game_sessions").update({ status: "media" }).eq("id", sessionId);
     if (error) throw error;
 
+    await logEvent(admin, sessionId, "show_media", {});
     const state = await publishState(admin, sessionId);
     return NextResponse.json({ state });
   } catch (error) {
