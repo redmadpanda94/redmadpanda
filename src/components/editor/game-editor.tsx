@@ -13,13 +13,16 @@ import { CategoryList } from "./category-list";
 import { QuestionGrid } from "./question-grid";
 import { QuestionPanel } from "./question-panel";
 import { ImportModal } from "./import-modal";
+import { GameSettingsPanel } from "./game-settings-panel";
 
 export function GameEditor({ game, initialCategories }: { game: GameRow; initialCategories: CategoryWithQuestions[] }) {
   const [title, setTitle] = useState(game.title);
+  const [settings, setSettings] = useState(game.settings);
   const [categories, setCategories] = useState(initialCategories);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(initialCategories[0]?.id ?? null);
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [, startTransition] = useTransition();
   const toast = useToast();
   const confirm = useConfirm();
@@ -216,6 +219,9 @@ export function GameEditor({ game, initialCategories }: { game: GameRow; initial
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted">{totalQuestions} questions</span>
+          <Button variant="secondary" onClick={() => setShowSettings(true)}>
+            ⚙ Settings
+          </Button>
           <Button variant="secondary" onClick={() => setShowImport(true)}>
             Import CSV/Excel
           </Button>
@@ -282,6 +288,15 @@ export function GameEditor({ game, initialCategories }: { game: GameRow; initial
             setShowImport(false);
             toast.show("Import complete.", "success");
           }}
+        />
+      )}
+
+      {showSettings && (
+        <GameSettingsPanel
+          gameId={game.id}
+          settings={settings}
+          onChange={setSettings}
+          onClose={() => setShowSettings(false)}
         />
       )}
     </div>

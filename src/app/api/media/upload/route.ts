@@ -1,8 +1,12 @@
 import { randomUUID } from "node:crypto";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import nodePath from "node:path";
 import { NextResponse } from "next/server";
 import { ApiError, handleApiError, requireHost } from "@/lib/api-helpers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sanitizeFilename, validateUpload } from "@/lib/game/media-validation";
+import { probeDurationSeconds } from "@/lib/game/ffmpeg-run";
 
 export const runtime = "nodejs";
 
@@ -31,9 +35,9 @@ export async function POST(request: Request) {
       throw new ApiError(validation.error ?? "Invalid file.", 400);
     }
 
-    const path = `${user.id}/${questionId}/${randomUUID()}-${sanitizeFilename(file.name)}.${validation.extension}`;
+    const storagePath = `${user.id}/${questionId}/${randomUUID()}-${sanitizeFilename(file.name)}.${validation.extension}`;
     const admin = createAdminClient();
-    const { error: uploadError } = await admin.storage.from("quiz-media").upload(path, file, {
+    const { error: uploadError } = await admin.storage.from("quiz-media").upload(storagePath, file, {
       contentType: file.type,
       upsert: false,
     });
@@ -41,14 +45,35 @@ export async function POST(request: Request) {
 
     const {
       data: { publicUrl },
-    } = admin.storage.from("quiz-media").getPublicUrl(path);
+    } = admin.storage.from("quiz-media").getPublicUrl(storagePath);
+
+    let duration: number | null = null;
+    if (validation.mediaType === "video" || validation.mediaType === "audio") {
+      duration = await probeUploadedDuration(file);
+    }
 
     return NextResponse.json({
-      storagePath: path,
+      storagePath,
       url: publicUrl,
       mediaType: validation.mediaType,
+      duration,
     });
   } catch (error) {
     return handleApiError(error);
+  }
+}
+
+/** Best-effort: writes the upload to a temp file just long enough to probe its duration with ffprobe. */
+async function probeUploadedDuration(file: File): Promise<number | null> {
+  let dir: string | null = null;
+  try {
+    dir = await mkdtemp(nodePath.join(tmpdir(), "quiznight-probe-"));
+    const tempPath = nodePath.join(dir, "input");
+    await writeFile(tempPath, Buffer.from(await file.arrayBuffer()));
+    return await probeDurationSeconds(tempPath);
+  } catch {
+    return null;
+  } finally {
+    if (dir) await rm(dir, { recursive: true, force: true }).catch(() => {});
   }
 }

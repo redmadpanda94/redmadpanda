@@ -15,7 +15,7 @@ export async function POST(request: Request) {
         title: body.title,
         description: body.description ?? null,
         game_type: body.gameType,
-        settings: DEFAULT_GAME_SETTINGS,
+        settings: { ...DEFAULT_GAME_SETTINGS, ...body.settings },
       })
       .select()
       .single();

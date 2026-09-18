@@ -7,6 +7,8 @@ import { friendlyError, useToast } from "@/components/ui/toast";
 import { useConfirm } from "@/components/ui/confirm-provider";
 import { parseYoutubeUrl } from "@/lib/game/youtube";
 import type { MediaRow } from "@/types/database";
+import { MediaTrimDialog } from "./media-trim-dialog";
+import { formatTime } from "@/lib/utils";
 
 const TABS = ["image", "youtube", "upload"] as const;
 type Tab = (typeof TABS)[number];
@@ -21,6 +23,7 @@ export function MediaManager({
   onChange: (media: MediaRow[]) => void;
 }) {
   const [tab, setTab] = useState<Tab>("image");
+  const [trimTarget, setTrimTarget] = useState<MediaRow | null>(null);
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -51,13 +54,36 @@ export function MediaManager({
           {media.map((item) => (
             <li key={item.id} className="flex items-center gap-2 rounded-lg border border-border bg-background-elevated px-3 py-2 text-sm">
               <MediaThumb item={item} />
-              <span className="flex-1 truncate text-muted">{mediaLabel(item)}</span>
+              <span className="flex-1 truncate text-muted">
+                {mediaLabel(item)}
+                {item.trim_start !== null && item.trim_end !== null && (
+                  <span className="ml-1.5 text-accent">
+                    ({formatTime(item.trim_start)}–{formatTime(item.trim_end)})
+                  </span>
+                )}
+              </span>
+              {(item.type === "video" || item.type === "audio") && item.storage_path && (
+                <button className="text-xs text-primary hover:underline" onClick={() => setTrimTarget(item)}>
+                  Trim
+                </button>
+              )}
               <button className="text-xs text-danger hover:underline" onClick={() => removeMedia(item.id)}>
                 Remove
               </button>
             </li>
           ))}
         </ul>
+      )}
+
+      {trimTarget && (
+        <MediaTrimDialog
+          media={trimTarget}
+          onClose={() => setTrimTarget(null)}
+          onTrimmed={(updated) => {
+            onChange(media.map((m) => (m.id === updated.id ? updated : m)));
+            setTrimTarget(null);
+          }}
+        />
       )}
 
       <div className="mb-2 flex gap-1 rounded-lg bg-background-elevated p-1 text-xs">
@@ -207,6 +233,7 @@ function UploadForm({ questionId, onAdded }: { questionId: string; onAdded: (m: 
         type: body.mediaType,
         url: body.url,
         storagePath: body.storagePath,
+        duration: body.duration ?? undefined,
       });
       onAdded(media);
     } catch (err) {

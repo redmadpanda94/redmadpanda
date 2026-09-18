@@ -10,6 +10,7 @@ import { Input, Label, Textarea } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { friendlyError, useToast } from "@/components/ui/toast";
 import { useConfirm } from "@/components/ui/confirm-provider";
+import { loadDefaultSettings } from "@/lib/default-settings";
 
 export interface GameWithCounts extends GameRow {
   categoryCount: number;
@@ -171,7 +172,7 @@ function CreateGameModal({ onClose, onCreated }: { onClose: () => void; onCreate
         const res = await fetch("/api/games", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, description, gameType }),
+          body: JSON.stringify({ title, description, gameType, settings: loadDefaultSettings() }),
         });
         const body = await res.json();
         if (!res.ok) throw new Error(body.error);

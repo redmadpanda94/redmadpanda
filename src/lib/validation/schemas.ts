@@ -11,6 +11,7 @@ export const gameCreateSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(120),
   description: z.string().trim().max(500).optional(),
   gameType: z.enum(["classic", "custom"]).default("classic"),
+  settings: gameSettingsSchema.partial().optional(),
 });
 
 export const gameUpdateSchema = z.object({

@@ -48,15 +48,15 @@ export function BoardGrid({
                   disabled={disabled || isCompleted}
                   onClick={() => onSelectCell?.(cell, category.name)}
                   className={cn(
-                    "aspect-[5/3] rounded-lg font-display font-bold transition-all duration-150",
+                    "aspect-[5/3] rounded-lg border font-display font-bold transition-all duration-150",
                     "flex items-center justify-center text-2xl sm:text-3xl",
                     isCompleted
-                      ? "bg-background-elevated/40 text-white/10 cursor-default"
-                      : "bg-gradient-to-b from-primary/25 to-primary/10 text-accent hover:from-primary/40 hover:to-primary/20 hover:-translate-y-0.5 cursor-pointer shadow-md shadow-black/20",
+                      ? "border-white/5 bg-white/[0.03] text-white/15 cursor-default"
+                      : "border-transparent bg-gradient-to-b from-primary/25 to-primary/10 text-accent hover:from-primary/40 hover:to-primary/20 hover:-translate-y-0.5 cursor-pointer shadow-md shadow-black/20",
                     cell.isFinal && !isCompleted && "ring-2 ring-accent"
                   )}
                 >
-                  {isCompleted ? "" : cell.points}
+                  {isCompleted ? "✓" : cell.points}
                 </button>
               );
             })}
