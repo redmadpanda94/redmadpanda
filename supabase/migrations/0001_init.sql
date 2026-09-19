@@ -238,12 +238,16 @@ create index game_events_session_idx on game_events(session_id, created_at);
 -- ---------------------------------------------------------------------------
 
 create or replace function set_updated_at()
-returns trigger as $$
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
 begin
   new.updated_at = now();
   return new;
 end;
-$$ language plpgsql;
+$$;
 
 create trigger games_set_updated_at
   before update on games
