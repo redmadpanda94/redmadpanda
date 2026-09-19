@@ -28,8 +28,8 @@ function LoginForm() {
   function submit(e: React.FormEvent) {
     e.preventDefault();
     startTransition(async () => {
-      const supabase = createClient();
       try {
+        const supabase = createClient();
         if (mode === "sign-in") {
           const { error } = await supabase.auth.signInWithPassword({ email, password });
           if (error) throw error;
