@@ -107,8 +107,14 @@ export function MediaManager({
 
 function mediaLabel(item: MediaRow): string {
   switch (item.type) {
-    case "youtube":
-      return `YouTube: ${item.youtube_id}`;
+    case "youtube": {
+      let label = `YouTube: ${item.youtube_id}`;
+      if (item.youtube_start !== null || item.youtube_end !== null) {
+        label += ` (${formatTime(item.youtube_start ?? 0)}–${item.youtube_end !== null ? formatTime(item.youtube_end) : "end"})`;
+      }
+      if (item.youtube_audio_only) label += " 🔇 video hidden";
+      return label;
+    }
     case "image":
       return item.url ?? item.storage_path ?? "Image";
     case "gif":
@@ -178,6 +184,10 @@ function AddImageForm({ questionId, onAdded }: { questionId: string; onAdded: (m
 
 function AddYoutubeForm({ questionId, onAdded }: { questionId: string; onAdded: (m: MediaRow) => void }) {
   const [url, setUrl] = useState("");
+  const [showOptions, setShowOptions] = useState(false);
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [audioOnly, setAudioOnly] = useState(false);
   const [pending, setPending] = useState(false);
   const toast = useToast();
 
@@ -188,16 +198,28 @@ function AddYoutubeForm({ questionId, onAdded }: { questionId: string; onAdded: 
       toast.show("That doesn't look like a valid YouTube URL.", "error");
       return;
     }
+    const startSeconds = start ? Number(start) : (parsed.startSeconds ?? undefined);
+    const endSeconds = end ? Number(end) : undefined;
+    if (endSeconds !== undefined && startSeconds !== undefined && endSeconds <= startSeconds) {
+      toast.show("End time must be after the start time.", "error");
+      return;
+    }
     setPending(true);
     try {
       const media = await createMedia(questionId, {
         type: "youtube",
         url,
         youtubeId: parsed.videoId,
-        youtubeStart: parsed.startSeconds ?? undefined,
+        youtubeStart: startSeconds,
+        youtubeEnd: endSeconds,
+        youtubeAudioOnly: audioOnly,
       });
       onAdded(media);
       setUrl("");
+      setStart("");
+      setEnd("");
+      setAudioOnly(false);
+      setShowOptions(false);
     } catch (err) {
       toast.show(friendlyError(err), "error");
     } finally {
@@ -206,11 +228,52 @@ function AddYoutubeForm({ questionId, onAdded }: { questionId: string; onAdded: 
   }
 
   return (
-    <form onSubmit={submit} className="flex gap-2">
-      <Input required type="url" placeholder="https://youtube.com/watch?v=…" value={url} onChange={(e) => setUrl(e.target.value)} />
-      <Button type="submit" size="sm" disabled={pending}>
-        Add
-      </Button>
+    <form onSubmit={submit} className="flex flex-col gap-2">
+      <div className="flex gap-2">
+        <Input required type="url" placeholder="https://youtube.com/watch?v=…" value={url} onChange={(e) => setUrl(e.target.value)} />
+        <Button type="submit" size="sm" disabled={pending}>
+          Add
+        </Button>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setShowOptions((v) => !v)}
+        className="self-start text-[11px] text-muted hover:text-foreground"
+      >
+        {showOptions ? "− Hide clip options" : "+ Play just a clip / audio only"}
+      </button>
+
+      {showOptions && (
+        <div className="flex flex-wrap items-end gap-2 rounded-lg border border-border bg-background-elevated p-2.5">
+          <div>
+            <label className="mb-1 block text-[10px] uppercase tracking-wide text-muted">Start (sec)</label>
+            <Input
+              type="number"
+              min={0}
+              placeholder="0"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+              className="h-8 w-20 py-1"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-[10px] uppercase tracking-wide text-muted">End (sec)</label>
+            <Input
+              type="number"
+              min={0}
+              placeholder="e.g. 47"
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+              className="h-8 w-20 py-1"
+            />
+          </div>
+          <label className="flex items-center gap-1.5 pb-1.5 text-xs text-muted">
+            <input type="checkbox" checked={audioOnly} onChange={(e) => setAudioOnly(e.target.checked)} />
+            Hide video (audio only — cover it with an image below)
+          </label>
+        </div>
+      )}
     </form>
   );
 }

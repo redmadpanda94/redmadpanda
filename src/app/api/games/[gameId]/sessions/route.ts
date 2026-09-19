@@ -119,6 +119,8 @@ export async function POST(request: Request, ctx: { params: Promise<{ gameId: st
         storage_path: item.storage_path,
         youtube_id: item.youtube_id,
         youtube_start: item.youtube_start,
+        youtube_end: item.youtube_end,
+        youtube_audio_only: item.youtube_audio_only,
         trim_start: item.trim_start,
         trim_end: item.trim_end,
         duration: item.duration,

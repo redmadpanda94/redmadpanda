@@ -2,7 +2,7 @@
 
 import { useQuestionDetail } from "@/lib/realtime/use-question-detail";
 import { useSessionAction } from "./session-actions";
-import { MediaPlayer } from "./media-player";
+import { MediaGroup } from "./media-group";
 import { BuzzerPanel } from "./buzzer-panel";
 import { TimerControl } from "./timer-control";
 import { Scoreboard } from "./scoreboard";
@@ -47,13 +47,7 @@ export function HostQuestion({ sessionId, state }: { sessionId: string; state: S
           {state.timerSeconds !== null && <TimerControl sessionId={sessionId} seconds={state.timerSeconds} startedAt={state.timerStartedAt} />}
         </div>
 
-        {showMediaNow && media.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-4 animate-reveal">
-            {media.map((m) => (
-              <MediaPlayer key={m.id} media={m} autoplay={state.settings.mediaAutoplay} />
-            ))}
-          </div>
-        )}
+        {showMediaNow && media.length > 0 && <MediaGroup media={media} autoplay={state.settings.mediaAutoplay} />}
 
         {showQuestionText && (
           <h1 className="max-w-3xl text-balance text-center font-display text-3xl font-bold leading-tight sm:text-4xl animate-reveal">
@@ -62,11 +56,7 @@ export function HostQuestion({ sessionId, state }: { sessionId: string; state: S
         )}
 
         {cq.mediaPlacement === "after_question" && !showMediaNow && media.length > 0 && state.status !== "question" && (
-          <div className="flex flex-wrap items-center justify-center gap-4 animate-reveal">
-            {media.map((m) => (
-              <MediaPlayer key={m.id} media={m} autoplay={state.settings.mediaAutoplay} />
-            ))}
-          </div>
+          <MediaGroup media={media} autoplay={state.settings.mediaAutoplay} />
         )}
 
         {answerRevealed && (

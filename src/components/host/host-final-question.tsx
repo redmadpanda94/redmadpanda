@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuestionDetail } from "@/lib/realtime/use-question-detail";
 import { useFinalWagers } from "@/lib/realtime/use-final-wagers";
 import { useSessionAction } from "./session-actions";
-import { MediaPlayer } from "./media-player";
+import { MediaGroup } from "./media-group";
 import { Scoreboard } from "./scoreboard";
 import { formatScore } from "@/lib/utils";
 import type { SessionPublicState } from "@/lib/game/session-types";
@@ -71,13 +71,7 @@ export function HostFinalQuestion({ sessionId, state }: { sessionId: string; sta
           </button>
         ) : (
           <>
-            {detail.media.length > 0 && (
-              <div className="flex flex-wrap justify-center gap-4">
-                {detail.media.map((m) => (
-                  <MediaPlayer key={m.id} media={m} autoplay={state.settings.mediaAutoplay} />
-                ))}
-              </div>
-            )}
+            {detail.media.length > 0 && <MediaGroup media={detail.media} autoplay={state.settings.mediaAutoplay} />}
             <h2 className="max-w-2xl text-balance text-center font-display text-2xl font-bold">{detail.question.question_text}</h2>
 
             {answerRevealed ? (

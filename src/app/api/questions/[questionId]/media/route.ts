@@ -31,6 +31,8 @@ export async function POST(request: Request, ctx: { params: Promise<{ questionId
         original_storage_path: body.originalStoragePath ?? null,
         youtube_id: body.youtubeId ?? null,
         youtube_start: body.youtubeStart ?? null,
+        youtube_end: body.youtubeEnd ?? null,
+        youtube_audio_only: body.youtubeAudioOnly ?? false,
         trim_start: body.trimStart ?? null,
         trim_end: body.trimEnd ?? null,
         duration: body.duration ?? null,

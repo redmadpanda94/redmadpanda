@@ -55,8 +55,15 @@ function parseStartTime(raw: string | null): number | null {
   return (parseInt(h ?? "0", 10) * 3600) + (parseInt(m ?? "0", 10) * 60) + parseInt(s ?? "0", 10);
 }
 
-export function buildYoutubeEmbedUrl(videoId: string, startSeconds?: number | null): string {
+export function buildYoutubeEmbedUrl(
+  videoId: string,
+  startSeconds?: number | null,
+  endSeconds?: number | null,
+  autoplay?: boolean
+): string {
   const params = new URLSearchParams({ rel: "0", modestbranding: "1" });
   if (startSeconds) params.set("start", String(startSeconds));
+  if (endSeconds) params.set("end", String(endSeconds));
+  if (autoplay) params.set("autoplay", "1");
   return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
 }

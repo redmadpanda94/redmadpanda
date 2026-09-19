@@ -55,6 +55,8 @@ export const mediaCreateSchema = z.object({
   originalStoragePath: z.string().trim().optional(),
   youtubeId: z.string().trim().max(20).optional(),
   youtubeStart: z.number().int().min(0).optional(),
+  youtubeEnd: z.number().int().min(0).optional(),
+  youtubeAudioOnly: z.boolean().optional(),
   trimStart: z.number().min(0).optional(),
   trimEnd: z.number().min(0).optional(),
   duration: z.number().min(0).optional(),

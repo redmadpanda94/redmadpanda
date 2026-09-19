@@ -57,4 +57,17 @@ describe("buildYoutubeEmbedUrl", () => {
     const url = buildYoutubeEmbedUrl("dQw4w9WgXcQ");
     expect(url).not.toContain("start=");
   });
+
+  it("includes end time and autoplay when given, for playing just a clip", () => {
+    const url = buildYoutubeEmbedUrl("dQw4w9WgXcQ", 32, 47, true);
+    expect(url).toContain("start=32");
+    expect(url).toContain("end=47");
+    expect(url).toContain("autoplay=1");
+  });
+
+  it("omits end and autoplay when not requested", () => {
+    const url = buildYoutubeEmbedUrl("dQw4w9WgXcQ", 32);
+    expect(url).not.toContain("end=");
+    expect(url).not.toContain("autoplay=");
+  });
 });

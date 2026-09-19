@@ -76,6 +76,8 @@ export interface MediaRow {
   original_storage_path: string | null;
   youtube_id: string | null;
   youtube_start: number | null;
+  youtube_end: number | null;
+  youtube_audio_only: boolean;
   trim_start: number | null;
   trim_end: number | null;
   duration: number | null;
@@ -134,6 +136,8 @@ export interface SessionMediaRow {
   storage_path: string | null;
   youtube_id: string | null;
   youtube_start: number | null;
+  youtube_end: number | null;
+  youtube_audio_only: boolean;
   trim_start: number | null;
   trim_end: number | null;
   duration: number | null;
