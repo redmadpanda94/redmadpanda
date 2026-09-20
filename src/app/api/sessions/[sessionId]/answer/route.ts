@@ -34,7 +34,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ sessionId:
     if (!question) throw new ApiError("Question not found.", 404);
 
     const delta = computeAnswerDelta(question.points, outcome, {
-      subtractOnIncorrect: session.settings.subtractOnIncorrect,
+      incorrectPenalty: session.settings.incorrectPenalty,
     });
 
     await applyScoreDelta(admin, {

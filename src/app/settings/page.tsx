@@ -65,11 +65,20 @@ export default function SettingsPage() {
           </div>
 
           <ToggleRow label="Sound effects" checked={settings.soundEffectsEnabled} onChange={(v) => setSettings({ ...settings, soundEffectsEnabled: v })} />
-          <ToggleRow
-            label="Subtract points on incorrect answer"
-            checked={settings.subtractOnIncorrect}
-            onChange={(v) => setSettings({ ...settings, subtractOnIncorrect: v })}
-          />
+
+          <div>
+            <Label htmlFor="penalty">Points lost on an incorrect answer</Label>
+            <Select
+              id="penalty"
+              value={settings.incorrectPenalty}
+              onChange={(e) => setSettings({ ...settings, incorrectPenalty: e.target.value as GameSettings["incorrectPenalty"] })}
+            >
+              <option value="full">Full point value</option>
+              <option value="half">Half the point value</option>
+              <option value="none">No penalty (score unchanged)</option>
+            </Select>
+          </div>
+
           <ToggleRow label="Autoplay media" checked={settings.mediaAutoplay} onChange={(v) => setSettings({ ...settings, mediaAutoplay: v })} />
 
           <div className="mt-2 flex justify-end">

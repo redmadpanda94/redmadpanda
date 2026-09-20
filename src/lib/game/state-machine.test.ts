@@ -41,6 +41,17 @@ describe("session state machine", () => {
     expect(canTransition("board", "board")).toBe(true);
   });
 
+  it("allows ending the game (-> finished) from every live state, not just board", () => {
+    expect(canTransition("question", "finished")).toBe(true);
+    expect(canTransition("media", "finished")).toBe(true);
+    expect(canTransition("buzzing", "finished")).toBe(true);
+    expect(canTransition("answering", "finished")).toBe(true);
+    expect(canTransition("scoring", "finished")).toBe(true);
+    expect(canTransition("answer", "finished")).toBe(true);
+    expect(canTransition("board", "finished")).toBe(true);
+    expect(canTransition("final_question", "finished")).toBe(true);
+  });
+
   it("classifies live vs terminal/lobby states", () => {
     expect(isLiveState("buzzing")).toBe(true);
     expect(isLiveState("lobby")).toBe(false);

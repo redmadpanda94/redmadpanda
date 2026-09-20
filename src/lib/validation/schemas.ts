@@ -3,7 +3,7 @@ import { z } from "zod";
 export const gameSettingsSchema = z.object({
   defaultCountdownSeconds: z.number().int().min(0).max(600).nullable().default(null),
   soundEffectsEnabled: z.boolean().default(true),
-  subtractOnIncorrect: z.boolean().default(true),
+  incorrectPenalty: z.enum(["none", "half", "full"]).default("full"),
   mediaAutoplay: z.boolean().default(true),
 });
 

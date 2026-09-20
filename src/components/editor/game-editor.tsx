@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { GameRow } from "@/types/database";
+import { DEFAULT_GAME_SETTINGS, type GameRow } from "@/types/database";
 import type { CategoryWithQuestions, QuestionWithMedia } from "./types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,9 @@ import { GameSettingsPanel } from "./game-settings-panel";
 
 export function GameEditor({ game, initialCategories }: { game: GameRow; initialCategories: CategoryWithQuestions[] }) {
   const [title, setTitle] = useState(game.title);
-  const [settings, setSettings] = useState(game.settings);
+  // Merged with defaults so a game saved before a settings field existed
+  // (e.g. incorrectPenalty) still gets a valid value.
+  const [settings, setSettings] = useState({ ...DEFAULT_GAME_SETTINGS, ...game.settings });
   const [categories, setCategories] = useState(initialCategories);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(initialCategories[0]?.id ?? null);
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
@@ -225,6 +227,9 @@ export function GameEditor({ game, initialCategories }: { game: GameRow; initial
           <Button variant="secondary" onClick={() => setShowImport(true)}>
             Import CSV/Excel
           </Button>
+          <a href={`/api/games/${game.id}/export`} download>
+            <Button variant="secondary">⬇ Export CSV</Button>
+          </a>
           <Link href={`/games/${game.id}/preview`}>
             <Button variant="secondary">Preview</Button>
           </Link>

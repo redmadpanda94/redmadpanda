@@ -24,7 +24,9 @@ export function HostQuestion({ sessionId, state }: { sessionId: string; state: S
   const { question, media } = detail;
   const answerRevealed = state.status === "answer";
   const showMediaNow = state.status === "media" || cq.mediaPlacement === "before_question" || cq.mediaPlacement === "instead_of_question";
-  const showQuestionText = cq.mediaPlacement !== "instead_of_question" || state.status !== "media";
+  // "Instead of question" has no separate reveal step (media shows immediately,
+  // see showMediaNow above), so the question text should just never appear.
+  const showQuestionText = cq.mediaPlacement !== "instead_of_question";
 
   async function revealAnswer() {
     await call("/reveal-answer");

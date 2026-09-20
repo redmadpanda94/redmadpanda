@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { Input, Label, Select } from "@/components/ui/input";
 import { friendlyError, useToast } from "@/components/ui/toast";
-import type { GameSettings } from "@/types/database";
+import { DEFAULT_GAME_SETTINGS, type GameSettings } from "@/types/database";
 
 const COUNTDOWN_OPTIONS = [
   { label: "Disabled", value: "" },
@@ -28,7 +28,10 @@ export function GameSettingsPanel({
   onChange: (settings: GameSettings) => void;
   onClose: () => void;
 }) {
-  const [local, setLocal] = useState(settings);
+  // Defensively merged with defaults so a game saved before a settings field
+  // was added (e.g. incorrectPenalty replacing the old boolean toggle) still
+  // gets a valid value instead of `undefined`.
+  const [local, setLocal] = useState({ ...DEFAULT_GAME_SETTINGS, ...settings });
   const [customCountdown, setCustomCountdown] = useState(
     local.defaultCountdownSeconds && !COUNTDOWN_OPTIONS.some((o) => o.value === String(local.defaultCountdownSeconds))
       ? String(local.defaultCountdownSeconds)
@@ -110,11 +113,18 @@ export function GameSettingsPanel({
               checked={local.soundEffectsEnabled}
               onChange={(v) => setLocal({ ...local, soundEffectsEnabled: v })}
             />
-            <ToggleRow
-              label="Subtract points on incorrect answer"
-              checked={local.subtractOnIncorrect}
-              onChange={(v) => setLocal({ ...local, subtractOnIncorrect: v })}
-            />
+            <div>
+              <Label htmlFor="penalty">Points lost on an incorrect answer</Label>
+              <Select
+                id="penalty"
+                value={local.incorrectPenalty}
+                onChange={(e) => setLocal({ ...local, incorrectPenalty: e.target.value as GameSettings["incorrectPenalty"] })}
+              >
+                <option value="full">Full point value</option>
+                <option value="half">Half the point value</option>
+                <option value="none">No penalty (score unchanged)</option>
+              </Select>
+            </div>
             <ToggleRow
               label="Autoplay media"
               checked={local.mediaAutoplay}

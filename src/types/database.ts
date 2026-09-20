@@ -19,17 +19,20 @@ export type SessionStatus =
 export type BuzzStatus = "active" | "skipped" | "correct" | "incorrect";
 export type ScoreReason = "correct" | "incorrect" | "manual" | "undo" | "final_question" | "reset";
 
+/** How much to subtract from a team's score when they answer incorrectly. */
+export type IncorrectPenalty = "none" | "half" | "full";
+
 export interface GameSettings {
   defaultCountdownSeconds: number | null;
   soundEffectsEnabled: boolean;
-  subtractOnIncorrect: boolean;
+  incorrectPenalty: IncorrectPenalty;
   mediaAutoplay: boolean;
 }
 
 export const DEFAULT_GAME_SETTINGS: GameSettings = {
   defaultCountdownSeconds: null,
   soundEffectsEnabled: true,
-  subtractOnIncorrect: true,
+  incorrectPenalty: "full",
   mediaAutoplay: true,
 };
 

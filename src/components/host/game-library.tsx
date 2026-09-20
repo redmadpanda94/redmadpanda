@@ -149,6 +149,11 @@ function GameCard({ game, onRemoved }: { game: GameWithCounts; onRemoved: () => 
           <Button size="sm" variant="secondary" disabled={pending} onClick={duplicate}>
             Duplicate
           </Button>
+          <a href={`/api/games/${game.id}/export`} download>
+            <Button size="sm" variant="secondary">
+              ⬇ Export
+            </Button>
+          </a>
           <Button size="sm" variant="danger" disabled={pending} onClick={remove}>
             Delete
           </Button>

@@ -7,17 +7,26 @@ import {
 } from "./scoring";
 
 describe("computeAnswerDelta", () => {
-  it("awards the full point value on correct", () => {
-    expect(computeAnswerDelta(300, "correct", { subtractOnIncorrect: true })).toBe(300);
-    expect(computeAnswerDelta(300, "correct", { subtractOnIncorrect: false })).toBe(300);
+  it("awards the full point value on correct, regardless of the penalty setting", () => {
+    expect(computeAnswerDelta(300, "correct", { incorrectPenalty: "full" })).toBe(300);
+    expect(computeAnswerDelta(300, "correct", { incorrectPenalty: "half" })).toBe(300);
+    expect(computeAnswerDelta(300, "correct", { incorrectPenalty: "none" })).toBe(300);
   });
 
-  it("subtracts the point value on incorrect when the setting is on", () => {
-    expect(computeAnswerDelta(300, "incorrect", { subtractOnIncorrect: true })).toBe(-300);
+  it("subtracts the full point value on incorrect when the penalty is 'full'", () => {
+    expect(computeAnswerDelta(300, "incorrect", { incorrectPenalty: "full" })).toBe(-300);
   });
 
-  it("does not change score on incorrect when the setting is off", () => {
-    expect(computeAnswerDelta(300, "incorrect", { subtractOnIncorrect: false })).toBe(0);
+  it("subtracts half the point value on incorrect when the penalty is 'half'", () => {
+    expect(computeAnswerDelta(300, "incorrect", { incorrectPenalty: "half" })).toBe(-150);
+  });
+
+  it("rounds the half penalty to the nearest whole point for odd values", () => {
+    expect(computeAnswerDelta(101, "incorrect", { incorrectPenalty: "half" })).toBe(-51);
+  });
+
+  it("does not change score on incorrect when the penalty is 'none'", () => {
+    expect(computeAnswerDelta(300, "incorrect", { incorrectPenalty: "none" })).toBe(0);
   });
 });
 

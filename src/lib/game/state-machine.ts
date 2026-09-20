@@ -18,13 +18,16 @@ const LIVE_STATES: SessionStatus[] = [
 
 const TRANSITIONS: Record<SessionStatus, SessionStatus[]> = {
   lobby: ["board", "paused"],
+  // "finished" is reachable from every live state (not just board/final
+  // question) -- the host's "End game" control is an emergency-stop/early-
+  // wrap-up button that must work no matter where the game currently is.
   board: ["question", "final_question", "finished", "paused"],
-  question: ["media", "buzzing", "answering", "answer", "board", "paused"],
-  media: ["question", "buzzing", "answering", "answer", "board", "paused"],
-  buzzing: ["answering", "answer", "board", "paused"],
-  answering: ["buzzing", "scoring", "answer", "board", "paused"],
-  scoring: ["buzzing", "answering", "answer", "board", "paused"],
-  answer: ["board", "scoring", "paused"],
+  question: ["media", "buzzing", "answering", "answer", "board", "finished", "paused"],
+  media: ["question", "buzzing", "answering", "answer", "board", "finished", "paused"],
+  buzzing: ["answering", "answer", "board", "finished", "paused"],
+  answering: ["buzzing", "scoring", "answer", "board", "finished", "paused"],
+  scoring: ["buzzing", "answering", "answer", "board", "finished", "paused"],
+  answer: ["board", "scoring", "finished", "paused"],
   final_question: ["finished", "board", "answer", "paused"],
   finished: [],
   paused: LIVE_STATES,

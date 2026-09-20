@@ -92,7 +92,7 @@ async function main() {
       settings: {
         defaultCountdownSeconds: 15,
         soundEffectsEnabled: true,
-        subtractOnIncorrect: true,
+        incorrectPenalty: "full",
         mediaAutoplay: true,
       },
     })

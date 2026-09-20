@@ -4,7 +4,7 @@
  */
 
 export interface ScoreSettings {
-  subtractOnIncorrect: boolean;
+  incorrectPenalty: "none" | "half" | "full";
 }
 
 /** Delta to apply when the host marks an answer correct or incorrect. */
@@ -14,7 +14,15 @@ export function computeAnswerDelta(
   settings: ScoreSettings
 ): number {
   if (outcome === "correct") return pointValue;
-  return settings.subtractOnIncorrect ? -pointValue : 0;
+  switch (settings.incorrectPenalty) {
+    case "full":
+      return -pointValue;
+    case "half":
+      return -Math.round(pointValue / 2);
+    case "none":
+    default:
+      return 0;
+  }
 }
 
 /** Scores are intentionally allowed to go negative — no clamping. */
