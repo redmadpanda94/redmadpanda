@@ -8,10 +8,14 @@ export function MediaPlayer({ media, autoplay }: { media: SessionMediaRow; autop
     case "image":
     case "gif":
       // eslint-disable-next-line @next/next/no-img-element
-      return <img src={media.url ?? ""} alt="" className="max-h-[50vh] w-auto rounded-xl object-contain shadow-2xl" />;
+      return <img src={media.url ?? ""} alt="" className="max-h-[36vh] w-auto rounded-xl object-contain shadow-2xl" />;
     case "youtube":
+      // vw, not %: this box's parent centers its children instead of
+      // stretching them, so a %-based width has no defined containing
+      // block and collapses to a few hundred px (verified in a real
+      // browser) instead of filling the available space.
       return (
-        <div className="aspect-video w-[min(100%,48rem,calc(50vh*16/9))] overflow-hidden rounded-xl shadow-2xl">
+        <div className="aspect-video w-[min(90vw,48rem,calc(36vh*16/9))] overflow-hidden rounded-xl shadow-2xl">
           <iframe
             className="h-full w-full"
             src={buildYoutubeEmbedUrl(media.youtube_id ?? "", media.youtube_start, media.youtube_end)}
@@ -27,7 +31,7 @@ export function MediaPlayer({ media, autoplay }: { media: SessionMediaRow; autop
           src={mediaSrc(media)}
           controls
           autoPlay={autoplay}
-          className="max-h-[55vh] w-auto rounded-xl shadow-2xl"
+          className="max-h-[40vh] w-auto rounded-xl shadow-2xl"
         />
       );
     case "audio":
@@ -65,7 +69,7 @@ export function YoutubeWithCover({
   autoplay?: boolean;
 }) {
   return (
-    <div className="relative aspect-video w-[min(100%,48rem,calc(50vh*16/9))] overflow-hidden rounded-xl shadow-2xl">
+    <div className="relative aspect-video w-[min(90vw,48rem,calc(36vh*16/9))] overflow-hidden rounded-xl shadow-2xl">
       <iframe
         className="absolute inset-0 h-full w-full"
         src={buildYoutubeEmbedUrl(youtube.youtube_id ?? "", youtube.youtube_start, youtube.youtube_end, autoplay)}

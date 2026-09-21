@@ -29,7 +29,7 @@ export function HostFinished({ gameId, state }: { gameId: string; state: Session
   }
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-10 text-center">
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 overflow-y-auto px-4 py-6 text-center">
       <div className="animate-reveal">
         <p className="font-display text-sm font-semibold uppercase tracking-[0.3em] text-accent">Game Over</p>
         <h1 className="mt-2 font-display text-4xl font-bold">{state.title}</h1>

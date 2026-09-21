@@ -28,7 +28,7 @@ export function HostLobby({ sessionId, state }: { sessionId: string; state: Sess
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-center gap-10 px-5 py-10 text-center">
+    <div className="mx-auto flex w-full max-w-5xl min-h-0 flex-1 flex-col items-center gap-8 overflow-y-auto px-5 py-8 text-center">
       <div>
         <h1 className="font-display text-4xl font-bold">{state.title}</h1>
         <p className="mt-2 text-muted">Scan the QR code or enter the game code to join</p>

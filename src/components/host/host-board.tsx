@@ -22,9 +22,9 @@ export function HostBoard({ sessionId, state }: { sessionId: string; state: Sess
   const remaining = state.board.reduce((sum, c) => sum + c.cells.filter((cell) => cell.status !== "completed").length, 0);
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <Scoreboard teams={state.teams} />
-      <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-6">
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 overflow-y-auto px-4 py-4">
         <h1 className="font-display text-2xl font-bold sm:text-3xl">{state.title}</h1>
         <BoardGrid categories={state.board} onSelectCell={selectCell} disabled={selecting || pending !== null} />
         {remaining === 0 && (

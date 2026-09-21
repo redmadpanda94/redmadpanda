@@ -39,10 +39,10 @@ export function HostQuestion({ sessionId, state }: { sessionId: string; state: S
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <Scoreboard teams={state.teams} />
 
-      <div className="flex flex-1 flex-col items-center gap-6 overflow-y-auto px-4 py-6">
+      <div className="flex min-h-0 flex-1 flex-col items-center gap-4 overflow-y-auto px-4 py-4">
         <div className="flex items-center gap-3 text-sm text-muted">
           <span className="rounded-full bg-white/5 px-3 py-1 uppercase tracking-wide">{cq.categoryName}</span>
           <span className="font-display text-xl font-bold text-accent">{cq.points}</span>

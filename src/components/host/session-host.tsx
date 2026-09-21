@@ -51,7 +51,12 @@ export function SessionHost({
   }
 
   return (
-    <div ref={containerRef} className="flex min-h-screen flex-col bg-background">
+    // h-screen + overflow-hidden (not min-h-screen), because in fullscreen
+    // this div becomes the actual scroll root -- there's no page-level
+    // scrollbar to fall back on, so it must be hard-capped to the screen
+    // and lean on the inner overflow-y-auto regions below for anything
+    // that doesn't fit, rather than silently growing past the visible area.
+    <div ref={containerRef} className="flex h-screen flex-col overflow-hidden bg-background">
       <div className="flex items-center justify-between border-b border-border px-4 py-2 text-xs text-muted">
         <div className="flex items-center gap-3">
           <span className="font-display text-sm font-semibold text-foreground">{state.title || initialTitle}</span>
@@ -68,7 +73,7 @@ export function SessionHost({
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
         {state.status === "lobby" && <HostLobby sessionId={sessionId} state={state} />}
         {state.status === "board" && <HostBoard sessionId={sessionId} state={state} />}
         {["question", "media", "buzzing", "answering", "scoring", "answer"].includes(state.status) && (
