@@ -11,7 +11,7 @@ export function MediaPlayer({ media, autoplay }: { media: SessionMediaRow; autop
       return <img src={media.url ?? ""} alt="" className="max-h-[50vh] w-auto rounded-xl object-contain shadow-2xl" />;
     case "youtube":
       return (
-        <div className="aspect-video max-h-[50vh] w-auto max-w-3xl overflow-hidden rounded-xl shadow-2xl">
+        <div className="aspect-video w-[min(100%,48rem,calc(50vh*16/9))] overflow-hidden rounded-xl shadow-2xl">
           <iframe
             className="h-full w-full"
             src={buildYoutubeEmbedUrl(media.youtube_id ?? "", media.youtube_start, media.youtube_end)}
@@ -65,7 +65,7 @@ export function YoutubeWithCover({
   autoplay?: boolean;
 }) {
   return (
-    <div className="relative aspect-video max-h-[50vh] w-auto max-w-3xl overflow-hidden rounded-xl shadow-2xl">
+    <div className="relative aspect-video w-[min(100%,48rem,calc(50vh*16/9))] overflow-hidden rounded-xl shadow-2xl">
       <iframe
         className="absolute inset-0 h-full w-full"
         src={buildYoutubeEmbedUrl(youtube.youtube_id ?? "", youtube.youtube_start, youtube.youtube_end, autoplay)}
