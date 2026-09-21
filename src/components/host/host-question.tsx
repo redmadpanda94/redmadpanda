@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useQuestionDetail } from "@/lib/realtime/use-question-detail";
 import { useSessionAction } from "./session-actions";
 import { MediaGroup } from "./media-group";
@@ -12,6 +13,15 @@ export function HostQuestion({ sessionId, state }: { sessionId: string; state: S
   const { detail } = useQuestionDetail(state.currentQuestion?.id);
   const { call, pending } = useSessionAction(sessionId);
   const cq = state.currentQuestion;
+  const [replaySignal, setReplaySignal] = useState(0);
+  // Reset the moment the question changes, during render rather than an
+  // effect (React's recommended pattern for resetting state on a prop
+  // change -- see https://react.dev/learn/you-might-not-need-an-effect).
+  const [replayResetForId, setReplayResetForId] = useState(cq?.id);
+  if (cq?.id !== replayResetForId) {
+    setReplayResetForId(cq?.id);
+    setReplaySignal(0);
+  }
 
   if (!cq || !detail) {
     return (
@@ -27,6 +37,10 @@ export function HostQuestion({ sessionId, state }: { sessionId: string; state: S
   // "Instead of question" has no separate reveal step (media shows immediately,
   // see showMediaNow above), so the question text should just never appear.
   const showQuestionText = cq.mediaPlacement !== "instead_of_question";
+  // A team buzzing in must stop playback instantly, regardless of exact
+  // status -- buzzQueue fills the moment a buzz event lands, before any
+  // other status field changes.
+  const mediaPlaying = (state.status === "question" || state.status === "media") && state.buzzQueue.length === 0;
 
   async function revealAnswer() {
     await call("/reveal-answer");
@@ -49,7 +63,9 @@ export function HostQuestion({ sessionId, state }: { sessionId: string; state: S
           {state.timerSeconds !== null && <TimerControl sessionId={sessionId} seconds={state.timerSeconds} startedAt={state.timerStartedAt} />}
         </div>
 
-        {showMediaNow && media.length > 0 && <MediaGroup media={media} autoplay={state.settings.mediaAutoplay} />}
+        {showMediaNow && media.length > 0 && (
+          <MediaGroup media={media} autoplay={state.settings.mediaAutoplay} playing={mediaPlaying} replaySignal={replaySignal} />
+        )}
 
         {showQuestionText && (
           <h1 className="max-w-3xl text-balance text-center font-display text-3xl font-bold leading-tight sm:text-4xl animate-reveal">
@@ -58,7 +74,7 @@ export function HostQuestion({ sessionId, state }: { sessionId: string; state: S
         )}
 
         {cq.mediaPlacement === "after_question" && !showMediaNow && media.length > 0 && state.status !== "question" && (
-          <MediaGroup media={media} autoplay={state.settings.mediaAutoplay} />
+          <MediaGroup media={media} autoplay={state.settings.mediaAutoplay} playing={mediaPlaying} replaySignal={replaySignal} />
         )}
 
         {answerRevealed && (
@@ -76,6 +92,11 @@ export function HostQuestion({ sessionId, state }: { sessionId: string; state: S
           {cq.mediaPlacement === "after_question" && media.length > 0 && state.status === "question" && (
             <ActionButton onClick={showMedia} disabled={pending !== null}>
               ▶ Play Media
+            </ActionButton>
+          )}
+          {media.length > 0 && (showMediaNow || state.status !== "question") && (
+            <ActionButton onClick={() => setReplaySignal((n) => n + 1)} disabled={pending !== null}>
+              ↻ Replay
             </ActionButton>
           )}
           {!answerRevealed && (

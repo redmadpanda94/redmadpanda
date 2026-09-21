@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildYoutubeEmbedUrl, parseYoutubeUrl } from "./youtube";
+import { buildYoutubeEmbedUrl, parseYoutubeUrl, youtubePlayerCommand } from "./youtube";
 
 describe("parseYoutubeUrl", () => {
   it("parses a standard watch URL", () => {
@@ -69,5 +69,19 @@ describe("buildYoutubeEmbedUrl", () => {
     const url = buildYoutubeEmbedUrl("dQw4w9WgXcQ", 32);
     expect(url).not.toContain("end=");
     expect(url).not.toContain("autoplay=");
+  });
+
+  it("always enables the postMessage player API, for stop-on-buzz and replay", () => {
+    expect(buildYoutubeEmbedUrl("dQw4w9WgXcQ")).toContain("enablejsapi=1");
+  });
+});
+
+describe("youtubePlayerCommand", () => {
+  it("builds a pauseVideo command with no args", () => {
+    expect(JSON.parse(youtubePlayerCommand("pauseVideo"))).toEqual({ event: "command", func: "pauseVideo", args: [] });
+  });
+
+  it("builds a seekTo command with args", () => {
+    expect(JSON.parse(youtubePlayerCommand("seekTo", [0, true]))).toEqual({ event: "command", func: "seekTo", args: [0, true] });
   });
 });

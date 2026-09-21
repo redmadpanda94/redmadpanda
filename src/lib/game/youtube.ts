@@ -61,9 +61,17 @@ export function buildYoutubeEmbedUrl(
   endSeconds?: number | null,
   autoplay?: boolean
 ): string {
-  const params = new URLSearchParams({ rel: "0", modestbranding: "1" });
+  // enablejsapi lets the host page send the iframe pause/seek/play
+  // commands via postMessage (stop-on-buzz, replay) -- see
+  // youtubePlayerCommand below.
+  const params = new URLSearchParams({ rel: "0", modestbranding: "1", enablejsapi: "1" });
   if (startSeconds) params.set("start", String(startSeconds));
   if (endSeconds) params.set("end", String(endSeconds));
   if (autoplay) params.set("autoplay", "1");
   return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+}
+
+/** A command message for the YouTube IFrame Player postMessage API. */
+export function youtubePlayerCommand(func: "pauseVideo" | "playVideo" | "seekTo", args: (string | number | boolean)[] = []): string {
+  return JSON.stringify({ event: "command", func, args });
 }

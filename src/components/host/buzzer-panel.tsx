@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { cn, formatScore } from "@/lib/utils";
 import { useSessionAction } from "./session-actions";
 import type { SessionPublicState } from "@/lib/game/session-types";
@@ -139,32 +140,7 @@ function TeamScoreQuickList({ sessionId, state }: { sessionId: string; state: Se
       </summary>
       <div className="flex flex-col gap-3 border-t border-border p-4">
         {state.teams.map((team) => (
-          <div key={team.id} className="flex items-center gap-2">
-            <span className="w-28 truncate text-sm">{team.name}</span>
-            <span className="w-16 text-right text-sm tabular-nums text-muted">{formatScore(team.score)}</span>
-            <div className="flex flex-1 flex-wrap justify-end gap-1">
-              {[100, 200, 500].map((amount) => (
-                <button
-                  key={`plus-${amount}`}
-                  disabled={pending !== null}
-                  onClick={() => call("/score", { teamId: team.id, delta: amount })}
-                  className="rounded bg-success/15 px-2 py-1 text-xs font-medium text-success hover:bg-success/25"
-                >
-                  +{amount}
-                </button>
-              ))}
-              {[100, 200, 500].map((amount) => (
-                <button
-                  key={`minus-${amount}`}
-                  disabled={pending !== null}
-                  onClick={() => call("/score", { teamId: team.id, delta: -amount })}
-                  className="rounded bg-danger/15 px-2 py-1 text-xs font-medium text-danger hover:bg-danger/25"
-                >
-                  −{amount}
-                </button>
-              ))}
-            </div>
-          </div>
+          <TeamScoreRow key={team.id} teamName={team.name} score={team.score} onApply={(delta) => call("/score", { teamId: team.id, delta })} disabled={pending !== null} />
         ))}
         <div className="flex justify-end">
           <button
@@ -177,5 +153,77 @@ function TeamScoreQuickList({ sessionId, state }: { sessionId: string; state: Se
         </div>
       </div>
     </details>
+  );
+}
+
+function TeamScoreRow({
+  teamName,
+  score,
+  onApply,
+  disabled,
+}: {
+  teamName: string;
+  score: number;
+  onApply: (delta: number) => void;
+  disabled: boolean;
+}) {
+  const [customAmount, setCustomAmount] = useState("");
+
+  function applyCustom(sign: 1 | -1) {
+    const amount = Number(customAmount);
+    if (!customAmount || !Number.isFinite(amount) || amount <= 0) return;
+    onApply(sign * amount);
+    setCustomAmount("");
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="w-28 truncate text-sm">{teamName}</span>
+      <span className="w-16 text-right text-sm tabular-nums text-muted">{formatScore(score)}</span>
+      <div className="flex flex-1 flex-wrap justify-end gap-1">
+        {[100, 200, 500].map((amount) => (
+          <button
+            key={`plus-${amount}`}
+            disabled={disabled}
+            onClick={() => onApply(amount)}
+            className="rounded bg-success/15 px-2 py-1 text-xs font-medium text-success hover:bg-success/25"
+          >
+            +{amount}
+          </button>
+        ))}
+        {[100, 200, 500].map((amount) => (
+          <button
+            key={`minus-${amount}`}
+            disabled={disabled}
+            onClick={() => onApply(-amount)}
+            className="rounded bg-danger/15 px-2 py-1 text-xs font-medium text-danger hover:bg-danger/25"
+          >
+            −{amount}
+          </button>
+        ))}
+        <input
+          type="number"
+          min={0}
+          placeholder="Custom"
+          value={customAmount}
+          onChange={(e) => setCustomAmount(e.target.value)}
+          className="h-6 w-20 rounded border border-border bg-background px-1.5 text-xs tabular-nums"
+        />
+        <button
+          disabled={disabled || !customAmount}
+          onClick={() => applyCustom(1)}
+          className="rounded bg-success/15 px-2 py-1 text-xs font-medium text-success hover:bg-success/25 disabled:opacity-40"
+        >
+          +
+        </button>
+        <button
+          disabled={disabled || !customAmount}
+          onClick={() => applyCustom(-1)}
+          className="rounded bg-danger/15 px-2 py-1 text-xs font-medium text-danger hover:bg-danger/25 disabled:opacity-40"
+        >
+          −
+        </button>
+      </div>
+    </div>
   );
 }

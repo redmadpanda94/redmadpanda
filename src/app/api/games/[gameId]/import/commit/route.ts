@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ApiError, handleApiError, parseJson, requireHost } from "@/lib/api-helpers";
 import { importCommitSchema } from "@/lib/validation/schemas";
+import { computeQuestionPositions } from "@/lib/game/question-order";
 import type { CategoryRow } from "@/types/database";
 
 export async function POST(request: Request, ctx: { params: Promise<{ gameId: string }> }) {
@@ -73,6 +74,27 @@ export async function POST(request: Request, ctx: { params: Promise<{ gameId: st
       const entry = createdCategories.get(category.id) ?? { id: category.id, name: category.name, position: category.position, questions: [] };
       entry.questions.push({ ...question, media });
       createdCategories.set(category.id, entry);
+    }
+
+    // Imported rows land in file order, which may not be ascending point
+    // order -- re-sort each touched category's positions the same way a
+    // single question add/edit does (see question-order.ts).
+    for (const category of createdCategories.values()) {
+      const { data: siblings, error: siblingsError } = await supabase
+        .from("questions")
+        .select("id, points, position")
+        .eq("category_id", category.id);
+      if (siblingsError) throw siblingsError;
+      const positionUpdates = computeQuestionPositions(siblings ?? []);
+      const positionById = new Map(positionUpdates.map((u) => [u.id, u.position]));
+      for (const update of positionUpdates) {
+        const { error: updateError } = await supabase.from("questions").update({ position: update.position }).eq("id", update.id);
+        if (updateError) throw updateError;
+      }
+      for (const q of category.questions as { id: string; position: number }[]) {
+        const newPosition = positionById.get(q.id);
+        if (newPosition !== undefined) q.position = newPosition;
+      }
     }
 
     return NextResponse.json({ categories: [...createdCategories.values()] });

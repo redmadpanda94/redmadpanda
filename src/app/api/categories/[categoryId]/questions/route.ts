@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server";
 import { ApiError, handleApiError, parseJson, requireHost } from "@/lib/api-helpers";
 import { questionCreateSchema } from "@/lib/validation/schemas";
+import { computeQuestionPositions } from "@/lib/game/question-order";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+async function reorderByPoints(supabase: SupabaseClient, categoryId: string) {
+  const { data, error } = await supabase.from("questions").select("id, points, position").eq("category_id", categoryId);
+  if (error) throw error;
+  const updates = computeQuestionPositions(data ?? []);
+  for (const update of updates) {
+    const { error: updateError } = await supabase.from("questions").update({ position: update.position }).eq("id", update.id);
+    if (updateError) throw updateError;
+  }
+}
 
 export async function POST(request: Request, ctx: { params: Promise<{ categoryId: string }> }) {
   try {
@@ -36,7 +48,16 @@ export async function POST(request: Request, ctx: { params: Promise<{ categoryId
       .select()
       .single();
     if (error) throw error;
-    return NextResponse.json({ question: data }, { status: 201 });
+
+    await reorderByPoints(supabase, categoryId);
+    const { data: reordered, error: refetchError } = await supabase
+      .from("questions")
+      .select("*")
+      .eq("id", data.id)
+      .single();
+    if (refetchError) throw refetchError;
+
+    return NextResponse.json({ question: reordered }, { status: 201 });
   } catch (error) {
     return handleApiError(error);
   }
