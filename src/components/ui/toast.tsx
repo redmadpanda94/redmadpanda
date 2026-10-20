@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { useFullscreenPortalTarget } from "@/lib/use-fullscreen-portal-target";
 import { cn } from "@/lib/utils";
 
 interface Toast {
@@ -19,6 +21,7 @@ let idCounter = 0;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const portalTarget = useFullscreenPortalTarget();
 
   const show = useCallback((message: string, tone: Toast["tone"] = "info") => {
     const id = ++idCounter;
@@ -33,21 +36,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm">
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            className={cn(
-              "animate-float-in rounded-xl border px-4 py-3 text-sm shadow-xl backdrop-blur-md",
-              t.tone === "error" && "bg-danger/15 border-danger/40 text-danger",
-              t.tone === "success" && "bg-success/15 border-success/40 text-success",
-              t.tone === "info" && "bg-background-card border-border text-foreground"
-            )}
-          >
-            {t.message}
-          </div>
-        ))}
-      </div>
+      {portalTarget &&
+        createPortal(
+          <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm">
+            {toasts.map((t) => (
+              <div
+                key={t.id}
+                className={cn(
+                  "animate-float-in rounded-xl border px-4 py-3 text-sm shadow-xl backdrop-blur-md",
+                  t.tone === "error" && "bg-danger/15 border-danger/40 text-danger",
+                  t.tone === "success" && "bg-success/15 border-success/40 text-success",
+                  t.tone === "info" && "bg-background-card border-border text-foreground"
+                )}
+              >
+                {t.message}
+              </div>
+            ))}
+          </div>,
+          portalTarget
+        )}
     </ToastContext.Provider>
   );
 }

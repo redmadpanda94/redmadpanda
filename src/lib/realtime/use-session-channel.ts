@@ -60,5 +60,5 @@ export function useSessionChannel(sessionId: string, onSound?: (cue: SoundCue) =
     };
   }, [sessionId]);
 
-  return { state, connection };
+  return { state, connection, applyState: setState };
 }

@@ -108,11 +108,18 @@ export async function buildPublicState(admin: Admin, sessionId: string): Promise
   let finalWagers: SessionPublicState["finalWagers"] = [];
 
   if (currentDetail) {
-    const { data: buzzRows } = await admin
-      .from("buzz_events")
-      .select("*")
-      .eq("session_question_id", currentDetail.question.id)
-      .order("sequence", { ascending: true });
+    // Neither query depends on the other's result, so run them together
+    // instead of one after another.
+    const [{ data: buzzRows }, { data: wagerRows }] = await Promise.all([
+      admin
+        .from("buzz_events")
+        .select("*")
+        .eq("session_question_id", currentDetail.question.id)
+        .order("sequence", { ascending: true }),
+      currentDetail.question.is_final
+        ? admin.from("final_wagers").select("team_id").eq("session_question_id", currentDetail.question.id)
+        : Promise.resolve({ data: null }),
+    ]);
 
     const teamNameById = new Map((teams ?? []).map((t: TeamRow) => [t.id, t.name]));
     const entries: BuzzEntry[] = (buzzRows ?? []).map((b) => ({
@@ -130,11 +137,7 @@ export async function buildPublicState(admin: Admin, sessionId: string): Promise
     }));
 
     if (currentDetail.question.is_final) {
-      const { data: wagerRows } = await admin
-        .from("final_wagers")
-        .select("team_id")
-        .eq("session_question_id", currentDetail.question.id);
-      finalWagers = (wagerRows ?? []).map((w) => ({ teamId: w.team_id, submitted: true }));
+      finalWagers = (wagerRows ?? []).map((w: { team_id: string }) => ({ teamId: w.team_id, submitted: true }));
     }
   }
 
