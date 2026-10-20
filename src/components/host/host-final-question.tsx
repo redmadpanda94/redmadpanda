@@ -41,7 +41,7 @@ export function HostFinalQuestion({ sessionId, state }: { sessionId: string; sta
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <Scoreboard teams={state.teams} />
+      <Scoreboard teams={state.teams} sessionId={sessionId} />
       <div className="flex min-h-0 flex-1 flex-col items-center gap-4 overflow-y-auto px-4 py-4">
         <div className="text-center">
           <p className="font-display text-sm font-semibold uppercase tracking-[0.3em] text-accent">🏆 Final Question</p>
