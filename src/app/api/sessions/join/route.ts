@@ -27,6 +27,44 @@ export async function POST(request: Request) {
     const token = generateTeamToken();
     const secretHash = hashTeamToken(token);
 
+    // A team name already taken in this session is usually a typo/collision
+    // -- unless it belongs to a currently-disconnected team, in which case
+    // this is very likely that same team rejoining mid-game from a new
+    // device after losing its saved session (lost cache, new phone, etc.).
+    // Reconnecting keeps their existing id and score instead of starting a
+    // duplicate team at 0. Matched in JS (not ilike) so `%`/`_` in a team
+    // name can't be misread as SQL wildcards; the real uniqueness
+    // constraint is teams_session_name_unique on lower(name), same rule.
+    const { data: sessionTeams } = await admin
+      .from("teams")
+      .select("id, name, connected, last_seen_at")
+      .eq("session_id", session.id);
+    const existing = (sessionTeams ?? []).find((t) => t.name.toLowerCase() === body.name.toLowerCase());
+
+    if (existing) {
+      const stillConnected = existing.connected && Date.now() - new Date(existing.last_seen_at).getTime() < 45_000;
+      if (stillConnected) {
+        throw new ApiError("That team name is already taken in this game. Please choose another.", 409);
+      }
+
+      const { error: updateError } = await admin
+        .from("teams")
+        .update({ secret_hash: secretHash, connected: true, last_seen_at: new Date().toISOString() })
+        .eq("id", existing.id);
+      if (updateError) throw updateError;
+
+      await logEvent(admin, session.id, "team_rejoined", { teamId: existing.id, teamName: existing.name });
+      await publishState(admin, session.id);
+
+      return NextResponse.json({
+        sessionId: session.id,
+        sessionTitle: session.title,
+        teamId: existing.id,
+        teamName: existing.name,
+        token,
+      });
+    }
+
     const { data: team, error: teamError } = await admin
       .from("teams")
       .insert({ session_id: session.id, name: body.name, secret_hash: secretHash, connected: true })

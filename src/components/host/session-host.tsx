@@ -12,6 +12,7 @@ import { HostFinished } from "./host-finished";
 import { ConnectionBadge } from "./connection-badge";
 import { HostToolbar } from "./host-toolbar";
 import { HistoryPanel } from "./history-panel";
+import { JoinInfoButton } from "./join-info-button";
 
 export function SessionHost({
   sessionId,
@@ -67,6 +68,7 @@ export function SessionHost({
           </div>
           <div className="flex items-center gap-3">
             <HistoryPanel sessionId={sessionId} teams={state.teams} />
+            {state.status !== "lobby" && state.status !== "finished" && <JoinInfoButton joinCode={state.joinCode || initialJoinCode} />}
             {state.status !== "lobby" && state.status !== "finished" && <HostToolbar sessionId={sessionId} />}
             {SoundToggle}
             <button onClick={toggleFullscreen} className="rounded px-2 py-1 hover:bg-white/10">
